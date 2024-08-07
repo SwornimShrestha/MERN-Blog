@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
+import { errorhandler } from "../utils/error.js";
 
-export const signup = async (req, res) => {
+export const signup = async (req, res, next) => {
   const { username, email, password } = req.body;
   if (
     !username ||
@@ -10,7 +11,7 @@ export const signup = async (req, res) => {
     email === "" ||
     password === ""
   ) {
-    return res.send(400).json({ message: "All field are required" });
+    next(errorhandler(400, "All field are required"));
   }
   const newUser = new User({
     username,
@@ -22,6 +23,6 @@ export const signup = async (req, res) => {
     await newUser.save();
     res.json({ message: "Signup Successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    next(error);
   }
 };
