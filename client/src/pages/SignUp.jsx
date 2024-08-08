@@ -1,24 +1,45 @@
 import React, { useState } from "react";
-import { Button, Label, TextInput } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Button, Label, TextInput, Alert, Spinner } from "flowbite-react";
+import { Link, useNavigate } from "react-router-dom";
 
 const SignUp = () => {
-  const [username, setUserName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [formData, setFormData] = useState({});
+  const [errorMessage, setErrorMessage] = useState(null);
+  const [loading, setloading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value.trim() });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.username || !formData.email || !formData.password) {
+      return setErrorMessage("Please fill out all fields.");
+    }
+    try {
+      setErrorMessage(null);
+      setloading(true);
 
-    const formData = {
-      username,
-      email,
-      password,
-    };
-    console.log("LoginData:", formData);
-
-    localStorage.setItem("formData", JSON.stringify(formData));
-    alert("Data saved to localstorage");
+      // localStorage.setItem("formData", JSON.stringify(formData));
+      // alert("Data saved to localstorage");
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        return setErrorMessage(data.message);
+      }
+      setloading(false);
+      if (res.ok) {
+        navigate("/sign-in");
+      }
+    } catch (error) {
+      setErrorMessage(error.message);
+      setloading(false);
+    }
   };
   return (
     <div className="min-h-screen mt-20">
@@ -46,8 +67,7 @@ const SignUp = () => {
                 type="text"
                 placeholder="Username"
                 id="username"
-                value={username}
-                onChange={(e) => setUserName(e.target.value)}
+                onChange={handleChange}
               />
             </div>
             <div>
@@ -56,8 +76,7 @@ const SignUp = () => {
                 type="email"
                 placeholder="name@company.com"
                 id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleChange}
               />
             </div>
             <div>
@@ -66,12 +85,22 @@ const SignUp = () => {
                 type="password"
                 placeholder="Password"
                 id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handleChange}
               />
             </div>
-            <Button gradientDuoTone="purpleToBlue" type="submit">
-              Sign Up
+            <Button
+              gradientDuoTone="purpleToBlue"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Spinner size="sm" />
+                  <span className="pl-3">Loading...</span>
+                </>
+              ) : (
+                "Sign Up"
+              )}
             </Button>
           </form>
           <div className="flex gap-2 text-sm mt-5">
@@ -80,6 +109,11 @@ const SignUp = () => {
               Sign In
             </Link>
           </div>
+          {errorMessage && (
+            <Alert className="mt-5" color="failure">
+              {errorMessage}
+            </Alert>
+          )}
         </div>
       </div>
     </div>
