@@ -21,8 +21,6 @@ const SignUp = () => {
       setErrorMessage(null);
       setloading(true);
 
-      // localStorage.setItem("formData", JSON.stringify(formData));
-      // alert("Data saved to localstorage");
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

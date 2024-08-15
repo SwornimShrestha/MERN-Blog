@@ -2,10 +2,19 @@ import React, { useState } from "react";
 import { Button, Label, TextInput, Alert, Spinner } from "flowbite-react";
 import { Link, useNavigate } from "react-router-dom";
 
+import { useDispatch, useSelector } from "react-redux";
+import {
+  signInStart,
+  signInSuccess,
+  signInFailure,
+} from "../redux/user/userSlice";
+
 const SignIn = () => {
   const [formData, setFormData] = useState({});
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setloading] = useState(false);
+
+  const { loading, error: errorMessage } = useSelector((state) => state.user);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -15,11 +24,10 @@ const SignIn = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
-      return setErrorMessage("Please fill out all fields.");
+      return dispatch(signInFailure("Please fill all the fields"));
     }
     try {
-      setErrorMessage(null);
-      setloading(true);
+      dispatch(signInStart());
 
       // localStorage.setItem("formData", JSON.stringify(formData));
       // alert("Data saved to localstorage");
@@ -30,15 +38,14 @@ const SignIn = () => {
       });
       const data = await res.json();
       if (data.success === false) {
-        return setErrorMessage(data.message);
+        dispatch(signInFailure(data.message));
       }
-      setloading(false);
       if (res.ok) {
+        dispatch(signInSuccess(data));
         navigate("/");
       }
     } catch (error) {
-      setErrorMessage(error.message);
-      setloading(false);
+      dispatch(signInFailure(error.message));
     }
   };
   return (
@@ -96,7 +103,7 @@ const SignIn = () => {
           </form>
           <div className="flex gap-2 text-sm mt-5">
             <span> Dont't Have an account?</span>
-            <Link to="/sign-un" className="text-blue-500">
+            <Link to="/sign-up" className="text-blue-500">
               Sign up
             </Link>
           </div>
