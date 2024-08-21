@@ -59,7 +59,7 @@ const Header = () => {
                   {currentUser.email}
                 </span>
               </Dropdown.Header>
-              <Link>
+              <Link to="/dashboard">
                 <Dropdown.Item>Profile</Dropdown.Item>
               </Link>
               <Dropdown.Divider />
